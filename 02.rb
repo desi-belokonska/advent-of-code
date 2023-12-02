@@ -29,21 +29,15 @@ class Day02 < Common
     games = Hash.new { |hash, key| hash[key] = { red: 0, green: 0, blue: 0 } }
 
     lines.each do |line|
-      game = /Game (?<game>\d+):/.match(line).match(:game).to_i
+      game_id, game_data = parse_game_line(line)
 
-      rest = line.gsub(/Game (?<game>\d+):/, '')
-      rest.split(';').each do |record|
-        red = /(\d+) red/.match(record)&.match(1).to_i || 0
-        green = /(\d+) green/.match(record)&.match(1).to_i || 0
-        blue = /(\d+) blue/.match(record)&.match(1).to_i || 0
-
-        games[game][:red] = red if red > games[game][:red]
-        games[game][:green] = green if green > games[game][:green]
-        games[game][:blue] = blue if blue > games[game][:blue]
+      game_data.each do |record|
+        cubes = extract_cubes(record)
+        update_maximum_cubes(games[game_id], cubes)
       end
     end
 
-    games.sum { |_, game| game[:red] * game[:green] * game[:blue] }
+    calculate_total_power(games)
   end
 
   private
@@ -57,11 +51,19 @@ class Day02 < Common
   def extract_cubes(record)
     colors = %i[red green blue]
     cubes = colors.map { |color| [color, record[/(\d+) #{color}/, 1].to_i] }.to_h
-    cubes.default_proc = proc { 0 }
+    cubes.default = 0
     cubes
   end
 
   def invalid_game?(cubes)
     cubes.any? { |color, count| count > MAX[color] } || cubes.values.sum > 39
+  end
+
+  def update_maximum_cubes(game_cubes, new_cubes)
+    new_cubes.each { |color, count| game_cubes[color] = count if count > game_cubes[color] }
+  end
+
+  def calculate_total_power(games)
+    games.values.map { |cubes| cubes.values.inject(:*) }.sum
   end
 end
