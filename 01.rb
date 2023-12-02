@@ -34,9 +34,11 @@ class Day01 < Common
 
   def find_digit(str, position)
     regex = if position == :first
-              /(one|two|three|four|five|six|seven|eight|nine|ten|\d).*$/
+              # ungreedy at the start
+              /.*?(one|two|three|four|five|six|seven|eight|nine|ten|\d)/
             else
-              /^.*(one|two|three|four|five|six|seven|eight|nine|ten|\d)/
+              # greedy at the start
+              /.*(one|two|three|four|five|six|seven|eight|nine|ten|\d)/
             end
     match = regex.match(str)
     convert_to_digit(match.captures.first)
