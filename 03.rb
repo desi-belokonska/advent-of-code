@@ -13,6 +13,23 @@ class Day03 < Common
     part_numbers.sum
   end
 
+  def part2
+    # key is position ([row, col]), value is numbers
+    gears = Hash.new { |hash, key| hash[key] = [] }
+    lines.each_with_index do |line, i|
+      find_numbers_in_line(line, i).each do |num, pos|
+        gears_around(pos).each do |gear_position|
+          gears[gear_position].push(num)
+        end
+      end
+    end
+    gears
+      .values
+      .filter { |nums| nums.length == 2 }
+      .map { |nums| nums.inject(&:*) }
+      .sum
+  end
+
   private
 
   def grid
@@ -43,6 +60,29 @@ class Day03 < Common
 
   def row_length
     grid[0].length
+  end
+
+  # returns array of gear positions [row, col]
+  def gears_around(position)
+    row, colstart, colend = position
+    gears = []
+
+    # up
+    grid.at(row - 1)&.each_with_index do |ch, i|
+      gears.push([row - 1, i]) if ((colstart - 1)..(colend + 1)).include?(i) && (ch == '*')
+    end
+
+    # current line
+    grid.at(row)&.each_with_index do |ch, i|
+      gears.push([row, i]) if ((colstart - 1)..(colend + 1)).include?(i) && (ch == '*')
+    end
+
+    # down
+    grid.at(row + 1)&.each_with_index do |ch, i|
+      gears.push([row + 1, i]) if ((colstart - 1)..(colend + 1)).include?(i) && (ch == '*')
+    end
+
+    gears
   end
 
   # position is [row, colstart, colend]
