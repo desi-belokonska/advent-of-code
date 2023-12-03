@@ -3,22 +3,20 @@ require './common'
 # Day 3 of Advent of code
 class Day03 < Common
   def part1
-    part_numbers = []
-    lines.each_with_index do |line, i|
-      find_numbers_in_line(line, i).each do |num, pos|
-        part_numbers.push(num) if adjacent_to_symbol?(pos)
+    lines.each_with_index.flat_map do |line, row|
+      numbers_with_positions(line).filter_map do |num, start_col, end_col|
+        num if adjacent_to_symbol?(row, start_col, end_col)
       end
-    end
-
-    part_numbers.sum
+    end.sum
   end
 
   def part2
     # key is position ([row, col]), value is numbers
     gears = Hash.new { |hash, key| hash[key] = [] }
-    lines.each_with_index do |line, i|
-      find_numbers_in_line(line, i).each do |num, pos|
-        gears_around(pos).each do |gear_position|
+
+    lines.each_with_index do |line, row|
+      numbers_with_positions(line).each do |num, start_col, end_col|
+        gears_around([row, start_col, end_col]).each do |gear_position|
           gears[gear_position].push(num)
         end
       end
@@ -36,26 +34,12 @@ class Day03 < Common
     @grid ||= lines.map(&:chars)
   end
 
-  # returns numbers and their position as [row, colstart, colend]
-  def find_numbers_in_line(line, row)
-    # go through the line until you find a number
-    # once you find a number, remember it's position
-    nums = []
-
-    i = 0
-
-    num_string = ''
-    while i <= line.length
-      unless num_string.empty? || digit?(line[i])
-        nums.push([num_string.to_i, [row, i - num_string.length, i - 1]])
-        num_string = ''
-      end
-
-      num_string += line[i] if digit?(line[i])
-      i += 1
+  # returns numbers and their position as [number, start_col, end_col]
+  def numbers_with_positions(line)
+    line.enum_for(:scan, /\d+/).map do
+      match = Regexp.last_match
+      [match[0].to_i, match.begin(0), match.end(0) - 1]
     end
-
-    nums
   end
 
   def row_length
@@ -85,26 +69,26 @@ class Day03 < Common
     gears
   end
 
-  # position is [row, colstart, colend]
-  def adjacent_to_symbol?(position)
-    row, colstart, colend = position
-    elems = []
+  def adjacent_to_symbol?(row, start_col, end_col)
+    (-1..1).any? do |dx|
+      check_row = row + dx
+      next if check_row.negative? || check_row >= grid.length
 
-    # up
-    up = grid.at(row - 1)&.at((colstart - 1)..(colend + 1))
-    elems.concat(up) unless up.nil?
-    # current line
-    current = grid.at(row)&.at((colstart - 1)..(colend + 1))
-    elems.concat(current) unless current.nil?
-    # down
-    down = grid.at(row + 1)&.at((colstart - 1)..(colend + 1))
-    elems.concat(down) unless down.nil?
+      (-1..1).any? do |dy|
+        next if dx.zero? && dy.zero?
 
-    /[^0-9.]/.match?(elems.join)
+        (start_col..end_col).any? do |col|
+          check_col = col + dy
+          next if check_col.negative? || check_col >= row_length
+
+          symbol?(grid[check_row][check_col])
+        end
+      end
+    end
   end
 
-  def digit?(str)
-    /\d/.match?(str)
+  def symbol?(cell)
+    !/\d|\./.match?(cell)
   end
 
   Array.class_eval do
