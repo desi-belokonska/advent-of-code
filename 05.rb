@@ -15,10 +15,39 @@ class Day05 < Common
       .min
   end
 
+  def part2
+    soil_ranges = find_destination_ranges(seed_ranges, seed_to_soil_map)
+    fertilizer_ranges = find_destination_ranges(soil_ranges, soil_to_fertilizer_map)
+    water_ranges = find_destination_ranges(fertilizer_ranges, fertilizer_to_water_map)
+    light_ranges = find_destination_ranges(water_ranges, water_to_light_map)
+    temperature_ranges = find_destination_ranges(light_ranges, light_to_temperature_map)
+    humidity_ranges = find_destination_ranges(temperature_ranges, temperature_to_humidity_map)
+    location_ranges = find_destination_ranges(humidity_ranges, humidity_to_location_map)
+    location_ranges.min_by(&:min).min
+  end
+
   private
+
+  def maps
+    [
+      seed_ranges,
+      soil_to_fertilizer_map,
+      fertilizer_to_water_map,
+      water_to_light_map,
+      light_to_temperature_map,
+      temperature_to_humidity_map,
+      humidity_to_location_map
+    ]
+  end
 
   def seeds
     @seeds ||= lines.first.scan(/\d+/).map(&:to_i)
+  end
+
+  def seed_ranges
+    @seed_ranges ||= seeds.each_slice(2).map do |start, range_length|
+      (start...start + range_length)
+    end
   end
 
   # seed-to-soil map
@@ -84,25 +113,49 @@ class Day05 < Common
     find_in_map(humidity, humidity_to_location_map)
   end
 
-  def find_in_map(source, map)
-    range = map.find do |line|
-      (line[:source_start]...line[:source_start] + line[:range_length]).include?(source)
+  def find_in_map(num, ranges)
+    ranges.each do |src, dst|
+      return dst.min + (num - src.min) if src.include?(num)
     end
 
-    return source if range.nil?
-
-    offset = source - range[:source_start]
-    range[:dest_start] + offset
+    num
   end
 
   def process_map(lines, map_name)
     rest = lines.drop_while { |line| !line.match?(map_name) }
     map_lines = rest.drop(1).take_while { |line| !line.empty? }
     map_lines
-      .map do |line|
+      .each_with_object({}) do |line, result|
         dest_start, source_start, range_length = line.scan(/\d+/).map(&:to_i)
-        { dest_start: dest_start, source_start: source_start, range_length: range_length }
+        result[source_start...(source_start + range_length)] = (dest_start...(dest_start + range_length))
       end
-      .sort_by { |range| range[:source_start] }
+  end
+
+  def find_destination_ranges(source_ranges, destination_ranges)
+    result = []
+    source_ranges.uniq.each do |src|
+      destination_ranges.each.with_index do |(orig_src, dst), i|
+        if (isct = range_intersection(src, orig_src))
+          result << ((isct.min - orig_src.min + dst.min)..(isct.max - orig_src.max + dst.max))
+          break if isct.size == src.size
+
+          src = if isct.max < src.max
+                  ((isct.max + 1)..src.max)
+                else
+                  ((src.min)..(isct.min - 1))
+                end
+
+        elsif i == destination_ranges.size - 1
+          result << src
+        end
+      end
+    end
+    result
+  end
+
+  def range_intersection(range1, range2)
+    return nil if range1.max < range2.begin || range2.max < range1.begin
+
+    [range1.begin, range2.begin].max..[range1.max, range2.max].min
   end
 end
