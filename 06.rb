@@ -10,6 +10,12 @@ class Day06 < Common
     end.inject(&:*)
   end
 
+  def part2
+    time = lines[0].scan(/\d+/).join.to_i
+    distance = lines[1].scan(/\d+/).join.to_i
+    ways_to_win(time, distance)
+  end
+
   def ways_to_win(time, distance_to_beat)
     time_to_hold = 1
     ways_to_win = 0
