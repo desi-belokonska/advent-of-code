@@ -1,3 +1,4 @@
+require 'set'
 require './common'
 
 # Day 8 of Advent of code
@@ -6,7 +7,33 @@ class Day08 < Common
     steps_to_end('AAA', 'ZZZ')
   end
 
+  def part2
+    current_nodes = map.keys.filter { |node| node.match?(/^\w\wA$/) }
+    all_multiples = Set.new
+
+    current_nodes.each do |current_node|
+      all_multiples.merge(multiples(steps_to_end(current_node, /^\w\wZ$/)))
+    end
+
+    all_multiples.inject(&:*)
+  end
+
   private
+
+  def multiples(num)
+    multiples = Set.new
+    multiple = 2
+
+    while multiple != num
+      while (num % multiple).zero?
+        multiples.merge([multiple, num / multiple])
+        num /= multiple
+      end
+      multiple += 1
+    end
+
+    multiples
+  end
 
   def steps_to_end(start_node, end_node)
     steps = 0
