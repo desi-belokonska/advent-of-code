@@ -131,10 +131,10 @@ class Day05 < Common
       end
   end
 
-  def find_destination_ranges(source_ranges, destination_ranges)
+  def find_destination_ranges(source_ranges, destination_map)
     result = []
     source_ranges.uniq.each do |src|
-      destination_ranges.each.with_index do |(orig_src, dst), i|
+      destination_map.each.with_index do |(orig_src, dst), i|
         if (isct = range_intersection(src, orig_src))
           result << ((isct.min - orig_src.min + dst.min)..(isct.max - orig_src.max + dst.max))
           break if isct.size == src.size
@@ -145,7 +145,7 @@ class Day05 < Common
                   ((src.min)..(isct.min - 1))
                 end
 
-        elsif i == destination_ranges.size - 1
+        elsif i == destination_map.size - 1
           result << src
         end
       end
