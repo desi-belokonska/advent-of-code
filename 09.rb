@@ -9,6 +9,12 @@ class Day09 < Common
     end
   end
 
+  def part2
+    histories.sum do |history|
+      frontfill(differences(history))
+    end
+  end
+
   private
 
   def histories
@@ -38,6 +44,15 @@ class Day09 < Common
       new_last = sequence.last + diff
       sequence << new_last
       diff = new_last
+    end.last
+  end
+
+  def frontfill(sequences)
+    diff = 0
+    sequences.reverse.map do |sequence|
+      new_fst = sequence.first - diff
+      sequence.prepend(new_fst)
+      diff = new_fst
     end.last
   end
 end
