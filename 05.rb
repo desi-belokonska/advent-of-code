@@ -3,7 +3,6 @@ require './common'
 # Day 5 of Advent of code
 class Day05 < Common
   def part1
-    # blash
     seeds
       .map(&method(:seed_to_soil))
       .map(&method(:soil_to_fertilizer))
@@ -16,29 +15,17 @@ class Day05 < Common
   end
 
   def part2
-    soil_ranges = find_destination_ranges(seed_ranges, seed_to_soil_map)
-    fertilizer_ranges = find_destination_ranges(soil_ranges, soil_to_fertilizer_map)
-    water_ranges = find_destination_ranges(fertilizer_ranges, fertilizer_to_water_map)
-    light_ranges = find_destination_ranges(water_ranges, water_to_light_map)
-    temperature_ranges = find_destination_ranges(light_ranges, light_to_temperature_map)
-    humidity_ranges = find_destination_ranges(temperature_ranges, temperature_to_humidity_map)
-    location_ranges = find_destination_ranges(humidity_ranges, humidity_to_location_map)
-    location_ranges.min_by(&:min).min
+    map_source_to_destination_ranges(seed_ranges, seed_to_soil_map)
+      .then { |ranges| map_source_to_destination_ranges(ranges, soil_to_fertilizer_map) }
+      .then { |ranges| map_source_to_destination_ranges(ranges, fertilizer_to_water_map) }
+      .then { |ranges| map_source_to_destination_ranges(ranges, water_to_light_map) }
+      .then { |ranges| map_source_to_destination_ranges(ranges, light_to_temperature_map) }
+      .then { |ranges| map_source_to_destination_ranges(ranges, temperature_to_humidity_map) }
+      .then { |ranges| map_source_to_destination_ranges(ranges, humidity_to_location_map) }
+      .min_by(&:min).min
   end
 
   private
-
-  def maps
-    [
-      seed_ranges,
-      soil_to_fertilizer_map,
-      fertilizer_to_water_map,
-      water_to_light_map,
-      light_to_temperature_map,
-      temperature_to_humidity_map,
-      humidity_to_location_map
-    ]
-  end
 
   def seeds
     @seeds ||= lines.first.scan(/\d+/).map(&:to_i)
@@ -131,18 +118,18 @@ class Day05 < Common
       end
   end
 
-  def find_destination_ranges(source_ranges, destination_map)
+  def map_source_to_destination_ranges(source_ranges, destination_map)
     result = []
-    source_ranges.uniq.each do |src|
-      destination_map.each.with_index do |(orig_src, dst), i|
-        if (isct = range_intersection(src, orig_src))
-          result << ((isct.min - orig_src.min + dst.min)..(isct.max - orig_src.max + dst.max))
-          break if isct.size == src.size
+    source_ranges.each do |src|
+      destination_map.each_with_index do |(orig_src, dst), i|
+        if (overlap = range_overlap(src, orig_src))
+          result << ((overlap.min - orig_src.min + dst.min)..(overlap.max - orig_src.max + dst.max))
+          break if overlap.size == src.size
 
-          src = if isct.max < src.max
-                  ((isct.max + 1)..src.max)
+          src = if overlap.max < src.max
+                  ((overlap.max + 1)..src.max)
                 else
-                  ((src.min)..(isct.min - 1))
+                  ((src.min)..(overlap.min - 1))
                 end
 
         elsif i == destination_map.size - 1
@@ -153,7 +140,7 @@ class Day05 < Common
     result
   end
 
-  def range_intersection(range1, range2)
+  def range_overlap(range1, range2)
     return nil if range1.max < range2.begin || range2.max < range1.begin
 
     [range1.begin, range2.begin].max..[range1.max, range2.max].min
