@@ -1,8 +1,11 @@
 #!/usr/bin/env ruby
+require 'singleton'
 require 'optparse'
 
 # Parse command line options
 class Options
+  include Singleton
+
   DESCRIPTION = 'Advent of Code runner for ruby'.freeze
   HEAD = 'Usage: aoc <day> <part> [options]'.freeze
 
@@ -51,10 +54,11 @@ end
 def execute_solution(day, year)
   klass = load_challenge(day, year)
 
-  klass.new(year).solution
+  klass.new.solution
 end
 
-options = Options.new
+# have to do this before we call ARGV
+Options.instance
 
 if ARGV.empty?
   puts Options::HEAD
@@ -62,6 +66,6 @@ if ARGV.empty?
 end
 
 day = ARGV[0]
-year = options[:year] || Time.now.year
+year = Options.instance[:year] || Time.now.year
 
 puts execute_solution(day, year)

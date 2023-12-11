@@ -1,6 +1,6 @@
 class Common
-  def initialize(year)
-    @year = year
+  def initialize
+    @year = Options.instance[:year] || Time.now.year
   end
 
   def lines(&block)
@@ -10,6 +10,10 @@ class Common
 
       block_given? ? arr.map(&block) : arr
     }.call
+  rescue Errno::ENOENT
+    puts "The file for day #{day} does not exist in #{@year}/input/"
+
+    exit 1
   end
 
   def nums
