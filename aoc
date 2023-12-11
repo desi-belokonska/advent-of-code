@@ -1,23 +1,67 @@
 #!/usr/bin/env ruby
 require 'optparse'
 
-options = {}
-OptionParser.new do |opts|
-  opts.banner = 'Usage: aoc.rb [options]'
+# Parse command line options
+class Options
+  DESCRIPTION = 'Advent of Code runner for ruby'.freeze
+  HEAD = 'Usage: aoc <day> <part> [options]'.freeze
 
-  opts.on('-y', '--year [YEAR]', 'Year to run') do |y|
-    options[:year] = y
+  def initialize
+    @options = {}
+    OptionParser.new do |parser|
+      parser.banner = [
+        DESCRIPTION,
+        '',
+        HEAD,
+        '',
+        "#{parser.summary_indent}<day> is the day to run (01 - 25)",
+        "#{parser.summary_indent}<part> is the part to run (1 or 2)",
+        '',
+        'Options:'
+      ].join("\n")
+
+      parser.on('-y', '--year [YEAR]', 'Year to run')
+      parser.on('-h', '--help', 'Displays Help') do
+        puts parser
+        exit
+      end
+    end.parse!(into: @options)
   end
 
-  opts.on('-h', '--help', 'Displays Help') do
-    puts opts
-    exit
+  def [](key)
+    @options[key]
   end
-end.parse!
+end
+
+def load_challenge(day, year)
+  unless Dir.exist?(year.to_s)
+    puts "The directory for year #{year} does not exist."
+    exit 1
+  end
+  require_relative "#{year}/#{day}"
+  Object.const_get("Day#{day}")
+rescue LoadError
+  puts "The file for day #{day} does not exist in #{year}/"
+  exit 1
+rescue NameError
+  puts "The class for day #{day} does not exist in #{year}/#{day}.rb, double check the class name."
+  exit 1
+end
+
+def execute_solution(day, year)
+  klass = load_challenge(day, year)
+
+  klass.new(year).solution
+end
+
+options = Options.new
+
+if ARGV.empty?
+  puts Options::HEAD
+  exit 1
+end
 
 day = ARGV[0]
-options[:year] = Time.now.year unless options[:year]
+year = options[:year] || Time.now.year
 
-require_relative "#{options[:year]}/#{day}"
-
-p Object.const_get("Day#{day}").new(options[:year]).solution
+puts execute_solution(day, year)
