@@ -4,14 +4,12 @@ class Common
   end
 
   def lines(&block)
-    f = File.new(input_file_name, autoclose: true)
+    @lines ||= proc {
+      f = File.new(input_file_name, autoclose: true)
+      arr = f.readlines(chomp: true)
 
-    arr = f.readlines(chomp: true)
-    @lines ||= if block_given?
-                 arr.map(&block)
-               else
-                 arr
-               end
+      block_given? ? arr.map(&block) : arr
+    }.call
   end
 
   def nums
@@ -19,9 +17,7 @@ class Common
   end
 
   def solution
-    return part1 if part == 1
-
-    part2
+    part == 2 ? part2 : part1
   end
 
   protected
