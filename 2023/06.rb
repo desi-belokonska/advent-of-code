@@ -1,4 +1,4 @@
-require_relative 'common'
+require_relative '../common'
 
 # Day 6 of Advent of code
 class Day06 < Common

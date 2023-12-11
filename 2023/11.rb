@@ -1,5 +1,5 @@
 require 'set'
-require_relative 'common'
+require_relative '../common'
 
 # Day 11 of Advent of code
 class Day11 < Common

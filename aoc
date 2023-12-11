@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+require 'optparse'
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = 'Usage: aoc.rb [options]'
+
+  opts.on('-y', '--year [YEAR]', 'Year to run') do |y|
+    options[:year] = y
+  end
+
+  opts.on('-h', '--help', 'Displays Help') do
+    puts opts
+    exit
+  end
+end.parse!
+
+day = ARGV[0]
+options[:year] = Time.now.year unless options[:year]
+
+require_relative "#{options[:year]}/#{day}"
+
+p Object.const_get("Day#{day}").new(options[:year]).solution

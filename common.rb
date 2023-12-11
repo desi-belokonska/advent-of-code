@@ -1,4 +1,8 @@
 class Common
+  def initialize(year)
+    @year = year
+  end
+
   def lines(&block)
     f = File.new(input_file_name, autoclose: true)
 
@@ -33,7 +37,7 @@ class Common
   private
 
   def input_file_name
-    "input/input#{day}#{'-test' if test?}.txt"
+    "#{@year}/input/input#{day}#{'-test' if test?}.txt"
   end
 
   def day
