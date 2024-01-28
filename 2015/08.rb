@@ -7,4 +7,10 @@ class Day08 < Common
       line.length - eval(line).length
     end
   end
+
+  def part2
+    lines.sum do |line|
+      line.inspect.length - line.length
+    end
+  end
 end
