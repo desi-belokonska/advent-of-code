@@ -1,6 +1,7 @@
 class Common
   def initialize
     @year = Options.instance[:year] || Time.now.year
+    @test = Options.instance[:test] || false
   end
 
   def lines(&block)
@@ -31,7 +32,7 @@ class Common
   def part2; end
 
   def test?
-    ARGV[2] == 'test'
+    @test
   end
 
   private

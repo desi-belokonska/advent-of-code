@@ -24,6 +24,7 @@ class Options
       ].join("\n")
 
       parser.on('-y', '--year [YEAR]', 'Year to run')
+      parser.on('-t', '--test', 'Uses test input instead of real input (must be <year>/input<day>-test.txt)')
       parser.on('-h', '--help', 'Displays Help') do
         puts parser
         exit
@@ -68,4 +69,4 @@ end
 day = ARGV[0]
 year = Options.instance[:year] || Time.now.year
 
-puts execute_solution(day, year)
+p execute_solution(day, year)
