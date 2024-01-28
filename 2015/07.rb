@@ -1,8 +1,15 @@
-require './common'
+require_relative '../common'
 
 # Day 7 of Advent of code
 class Day07 < Common
   def part1
+    evaluate('a')
+  end
+
+  def part2
+    a_value = evaluate('a')
+    result_map.clear
+    result_map['b'] = a_value
     evaluate('a')
   end
 
