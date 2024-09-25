@@ -2,6 +2,8 @@ Style/FrozenStringLiteralComment:
   Enabled: false
 Style/Documentation:
   Enabled: false
+Style/MultilineBlockChain:
+  Enabled: false
 
 Metrics/AbcSize:
   Enabled: false
