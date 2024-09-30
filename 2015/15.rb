@@ -12,6 +12,15 @@ class Day15 < Common
     end.max
   end
 
+  def part2
+    names = ingredients.map { |ing| ing[:name] }
+    n = ingredients.length
+
+    permutations(n, 100, names).filter_map do |perm|
+      total_score_500_cals(ingredients, perm)
+    end.max
+  end
+
   private
 
   def ingredients
@@ -36,6 +45,16 @@ class Day15 < Common
     texture = ingredients.map { |ing| (ing[:texture] * tsp[ing[:name]]) }.sum.clamp(0..)
 
     capacity * durability * flavor * texture
+  end
+
+  def total_score_500_cals(ingredients, tsp)
+    capacity = ingredients.map { |ing| (ing[:capacity] * tsp[ing[:name]]) }.sum.clamp(0..)
+    durability = ingredients.map { |ing| (ing[:durability] * tsp[ing[:name]]) }.sum.clamp(0..)
+    flavor = ingredients.map { |ing| (ing[:flavor] * tsp[ing[:name]]) }.sum.clamp(0..)
+    texture = ingredients.map { |ing| (ing[:texture] * tsp[ing[:name]]) }.sum.clamp(0..)
+    calories = ingredients.map { |ing| (ing[:calories] * tsp[ing[:name]]) }.sum.clamp(0..)
+
+    capacity * durability * flavor * texture if calories == 500
   end
 
   def permutations(num, sum, names)
