@@ -1,7 +1,5 @@
 require_relative '../common'
 
-require 'set'
-
 class Day16 < Common
   SUE = {
     'children' => 3,
@@ -17,20 +15,47 @@ class Day16 < Common
   }.freeze
 
   def part1
-    lines.find do |line|
-      match = line.match(/Sue \d+: (\w+): (\d+), (\w+): (\d+), (\w+): (\d+)/)
-
-      potential_sue = match.captures.each_slice(2).each_with_object({}) do |(element, times), has|
-        has[element] = times.to_i
-      end
-
+    find_sue do |potential_sue|
       partial_match?(SUE, potential_sue)
+    end
+  end
+
+  def part2
+    find_sue do |potential_sue|
+      real_sue?(SUE, potential_sue)
     end
   end
 
   private
 
+  def find_sue
+    lines.find do |line|
+      match = line.match(/Sue \d+: (\w+): (\d+), (\w+): (\d+), (\w+): (\d+)/)
+
+      potential_sue = match.captures.each_slice(2).each_with_object({}) do |(thing, times), has|
+        has[thing] = times.to_i
+      end
+
+      yield potential_sue
+    end
+  end
+
   def partial_match?(full, partial)
-    full.to_set.superset?(partial.to_set)
+    partial.each.all? do |thing, times|
+      full[thing] == times
+    end
+  end
+
+  def real_sue?(real, potential)
+    potential.each.all? do |thing, times|
+      case thing
+      when 'cats', 'trees'
+        real[thing] < times
+      when 'pomeranians', 'goldfish'
+        real[thing] > times
+      else
+        real[thing] == times
+      end
+    end
   end
 end
