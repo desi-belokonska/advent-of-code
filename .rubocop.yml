@@ -6,6 +6,8 @@ Style/MultilineBlockChain:
   Enabled: false
 Style/HashTransformValues:
   Enabled: false
+Style/NumericPredicate:
+  Enabled: false
 
 Metrics/AbcSize:
   Enabled: false
