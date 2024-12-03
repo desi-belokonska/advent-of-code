@@ -30,6 +30,9 @@ Naming/MethodParameterName:
 Layout/LineLength:
   Enabled: false
 
+Security/Eval:
+  Enabled: false
+
 AllCops:
   NewCops: disable
   TargetRubyVersion: 3.1
